@@ -4,15 +4,217 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Power Plant Dashboard</title>
-    <!-- Add required CDN links -->
-    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <!-- Load React -->
+    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <!-- Load Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Load XLSX -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- Add Tailwind CSS -->
+    <!-- Load Recharts -->
+    <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
+    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
     <div id="root"></div>
-    <script src="dashboard.js"></script>
+
+    <script type="text/babel">
+        const { useState } = React;
+        const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } = Recharts;
+
+        function Dashboard() {
+            const [inputs, setInputs] = useState({
+                basePrice: 4400,
+                gasPrice: 0,
+                efficiency: 0,
+                heatOutput: 0,
+                heatPrice: 0,
+                gasConsumption: 0,
+                expenses: 195324,
+            });
+            const [results, setResults] = useState(null);
+            const [error, setError] = useState('');
+
+            const calculateDerivedValues = () => {
+                const gasConsumptionHour = inputs.gasConsumption * 3.6;
+                const gasCostHour = gasConsumptionHour * inputs.gasPrice;
+                const heatRevenue = inputs.heatOutput * inputs.heatPrice;
+                const operatingCostHour = gasCostHour - heatRevenue;
+                return { gasConsumptionHour, gasCostHour, heatRevenue, operatingCostHour };
+            };
+
+            const processFile = (file) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const sheet2 = workbook.Sheets['Sheet2'];
+                        const jsonData = XLSX.utils.sheet_to_json(sheet2, { header: 1 });
+                        
+                        const derived = calculateDerivedValues();
+                        let profitable_hours = 0;
+                        let total_revenue = 0;
+                        let hourly_data = [];
+                        let daily_profits = Array(31).fill(0);
+                        let peak_price = 0;
+                        let peak_hour = '';
+
+                        for (let row = 1; row < jsonData.length; row++) {
+                            for (let col = 1; col < jsonData[row].length; col++) {
+                                const price = jsonData[row][col];
+                                const hourlyProfit = price - inputs.basePrice - derived.operatingCostHour;
+                                
+                                if (price > 5000) {
+                                    profitable_hours++;
+                                    total_revenue += hourlyProfit;
+                                    hourly_data.push({
+                                        hour: `Day ${row} Hour ${col}`,
+                                        price: price,
+                                        profit: hourlyProfit
+                                    });
+                                    daily_profits[row-1] += hourlyProfit;
+                                    
+                                    if (price > peak_price) {
+                                        peak_price = price;
+                                        peak_hour = `Day ${row} Hour ${col}`;
+                                    }
+                                }
+                            }
+                        }
+
+                        const net_profit = total_revenue - inputs.expenses;
+                        
+                        setResults({
+                            profitable_hours,
+                            total_revenue,
+                            net_profit,
+                            hourly_data,
+                            daily_profits: daily_profits.map((profit, index) => ({
+                                day: index + 1,
+                                profit: profit
+                            })),
+                            peak_price,
+                            peak_hour,
+                            derived
+                        });
+                    } catch (err) {
+                        setError('Error processing file. Please ensure correct format.');
+                        console.error(err);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            };
+
+            return (
+                <div className="p-6 bg-gray-100 min-h-screen">
+                    <div className="max-w-7xl mx-auto">
+                        <h1 className="text-3xl font-bold mb-8 text-gray-800">Power Plant Analytics Dashboard</h1>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div className="bg-white p-6 rounded-lg shadow-lg">
+                                <p className="text-gray-500 mb-1">Profitable Hours</p>
+                                <p className="text-2xl font-bold">{results?.profitable_hours || 0}</p>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-lg shadow-lg">
+                                <p className="text-gray-500 mb-1">Net Profit</p>
+                                <p className="text-2xl font-bold">{results?.net_profit?.toFixed(2) || 0}</p>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-lg shadow-lg">
+                                <p className="text-gray-500 mb-1">Peak Price</p>
+                                <p className="text-2xl font-bold">{results?.peak_price || 0}</p>
+                                <p className="text-xs text-gray-400">{results?.peak_hour || ''}</p>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-lg shadow-lg">
+                                <p className="text-gray-500 mb-1">Operating Cost/h</p>
+                                <p className="text-2xl font-bold">
+                                    {results?.derived?.operatingCostHour?.toFixed(2) || 0}
+                                </p>
+                            </div>
+                        </div>
+
+                        {results && (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                                <div className="bg-white p-6 rounded-lg shadow-lg">
+                                    <h2 className="text-xl font-bold mb-4">Hourly Profits Above 5000</h2>
+                                    <div style={{ width: '100%', height: 300 }}>
+                                        <ResponsiveContainer>
+                                            <BarChart data={results.hourly_data.slice(0, 24)}>
+                                                <CartesianGrid strokeDasharray="3 3" />
+                                                <XAxis dataKey="hour" angle={-45} textAnchor="end" height={80} />
+                                                <YAxis />
+                                                <Tooltip />
+                                                <Bar dataKey="profit" fill="#4f46e5" />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white p-6 rounded-lg shadow-lg">
+                                    <h2 className="text-xl font-bold mb-4">Daily Profit Distribution</h2>
+                                    <div style={{ width: '100%', height: 300 }}>
+                                        <ResponsiveContainer>
+                                            <LineChart data={results.daily_profits}>
+                                                <CartesianGrid strokeDasharray="3 3" />
+                                                <XAxis dataKey="day" />
+                                                <YAxis />
+                                                <Tooltip />
+                                                <Line type="monotone" dataKey="profit" stroke="#4f46e5" />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="bg-white p-6 rounded-lg shadow-lg">
+                            <h2 className="text-xl font-bold mb-4">Input Parameters</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {Object.entries(inputs).map(([key, value]) => (
+                                    <div key={key}>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
+                                        </label>
+                                        <input
+                                            type="number"
+                                            value={value}
+                                            onChange={(e) => setInputs(prev => ({
+                                                ...prev,
+                                                [key]: Number(e.target.value)
+                                            }))}
+                                            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mt-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Upload Excel File
+                                </label>
+                                <input
+                                    type="file"
+                                    accept=".xlsx,.xls"
+                                    onChange={(e) => e.target.files?.[0] && processFile(e.target.files[0])}
+                                    className="w-full p-2 border rounded"
+                                />
+                            </div>
+                        </div>
+
+                        {error && (
+                            <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-lg">
+                                {error}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<Dashboard />, document.getElementById('root'));
+    </script>
 </body>
 </html>
