@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Power Plant Dashboard</title>
+    <title>Gas Engine Calculator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,7 +11,7 @@
             background-color: #f5f5f5;
         }
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             background-color: white;
             padding: 20px;
@@ -46,11 +46,10 @@
         table {
             border-collapse: collapse;
             width: 100%;
-            font-size: 12px;
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 4px;
+            padding: 8px;
             text-align: right;
         }
         .highlighted {
@@ -58,14 +57,13 @@
         }
         .summary {
             font-weight: bold;
-            margin: 20px 0;
-            font-size: 16px;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Power Plant Dashboard</h1>
+        <h1>Gas Engine Calculator</h1>
 
         <!-- Variables Section -->
         <div class="section">
@@ -147,25 +145,25 @@
             <h2>Price Analysis</h2>
             <div class="input-group">
                 <label>Minimum Price:</label>
-                <input type="number" id="minPrice" value="5000" step="0.01" onchange="analyzePrices()">
+                <input type="number" id="minPrice" value="5000" step="0.01">
             </div>
-
+            <div class="input-group">
+                <label>Upload Excel File:</label>
+                <input type="file" id="excelFile" accept=".xlsx,.xls">
+            </div>
             <div class="summary">
                 <div>Hours above minimum price: <span id="hoursCount">0</span></div>
                 <div>Total Income: <span id="totalIncome">0</span></div>
-                <div>Total Revenue (after annual expenses): <span id="totalRevenue">0</span></div>
+                <div>Total Revenue: <span id="totalRevenue">0</span></div>
             </div>
-            
             <div id="priceTable" class="price-table">
                 <!-- Table will be generated here -->
             </div>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
-        // Embedded price data from your Excel file
-        const priceData = [[1,57,57,55.55,38,32,30,30,65,200,246,246,90,90,93,160,600,960,1210,999,720,470,140,68,70],[2,26,11,11,11,11,11.01,28,205,2700,3000,2489,2415,2415,2489,2862,2989,3200,3499,3286,3200,2750,2489,68,70],[3,26,20,10,10,10,10,1000,2540,3200,3600,3297,2989,2900,3111.66,3300,3400,3499,3600,3600,3499,3290,2900,2000,1600]]; // Continue with all data
-
         // Calculate results based on inputs
         function calculateResults() {
             const numberOfEngines = parseInt(document.getElementById('numberOfEngines').value);
@@ -187,7 +185,6 @@
             document.getElementById('mWePriceResult').textContent = mwePrice.toFixed(2);
 
             calculateSpending();
-            analyzePrices();
         }
 
         // Calculate total spending
@@ -199,58 +196,82 @@
 
             const total = costs.reduce((sum, cost) => sum + cost, 0);
             document.getElementById('totalSpending').textContent = total.toFixed(2);
-            analyzePrices();
         }
 
-        // Analyze prices and display results
-        function analyzePrices() {
-            const minPrice = parseFloat(document.getElementById('minPrice').value);
-            const mwePrice = parseFloat(document.getElementById('mWePriceResult').textContent);
-            const kweValue = parseFloat(document.getElementById('kweResult').textContent);
-            const monthlySpending = parseFloat(document.getElementById('totalSpending').textContent);
-            const annualSpending = monthlySpending * 12;
-            
-            let hoursCount = 0;
-            let totalIncome = 0;
-            let totalRevenue = 0;
+        // Process Excel file
+        document.getElementById('excelFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
 
-            // Create table
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet2 = workbook.Sheets['Sheet2'];
+                const jsonData = XLSX.utils.sheet_to_json(sheet2, { header: 1 });
+                
+                displayPriceTable(jsonData);
+                analyzePrices(jsonData);
+            };
+
+            reader.readAsArrayBuffer(file);
+        });
+
+        // Display price table with highlighting
+        function displayPriceTable(data) {
             const table = document.createElement('table');
+            const minPrice = parseFloat(document.getElementById('minPrice').value);
+
+            // Create header row
             const headerRow = document.createElement('tr');
             headerRow.innerHTML = '<th>Day</th>' + Array.from({length: 24}, (_, i) => 
                 `<th>Hour ${i+1}</th>`).join('');
             table.appendChild(headerRow);
 
-            // Create data rows and calculate totals
-            for (let i = 0; i < priceData.length; i++) {
+            // Create data rows
+            for (let i = 1; i < data.length; i++) {
                 const row = document.createElement('tr');
-                row.innerHTML = `<td>${priceData[i][0]}</td>`;
-                
-                for (let j = 1; j < priceData[i].length; j++) {
-                    const price = priceData[i][j];
-                    const isHighlighted = price > minPrice;
-                    
-                    row.innerHTML += `<td class="${isHighlighted ? 'highlighted' : ''}">${price}</td>`;
-                    
-                    if (isHighlighted) {
+                row.innerHTML = `<td>${i}</td>` + 
+                    data[i].slice(1).map(price => 
+                        `<td class="${price > minPrice ? 'highlighted' : ''}">${price}</td>`
+                    ).join('');
+                table.appendChild(row);
+            }
+
+            document.getElementById('priceTable').innerHTML = '';
+            document.getElementById('priceTable').appendChild(table);
+        }
+
+        // Analyze prices and calculate totals
+        function analyzePrices(data) {
+            const minPrice = parseFloat(document.getElementById('minPrice').value);
+            const mwePrice = parseFloat(document.getElementById('mWePriceResult').textContent);
+            
+            let hoursCount = 0;
+            let totalIncome = 0;
+            let totalRevenue = 0;
+            const kweValue = parseFloat(document.getElementById('kweResult').textContent);
+            const monthlySpending = parseFloat(document.getElementById('totalSpending').textContent);
+            const annualSpending = monthlySpending * 12;
+
+            for (let i = 1; i < data.length; i++) {
+                for (let j = 1; j < data[i].length; j++) {
+                    const price = data[i][j];
+                    if (price > minPrice) {
                         hoursCount++;
+                        // Calculate income: (price/1000) * kWe value
                         const hourIncome = (price/1000) * kweValue;
                         totalIncome += hourIncome;
+                        
+                        // Calculate revenue: ((price - MWe price)/1000) * kWe value
                         const hourRevenue = ((price - mwePrice)/1000) * kweValue;
                         totalRevenue += hourRevenue;
                     }
                 }
-                
-                table.appendChild(row);
             }
 
-            // Update display
-            document.getElementById('priceTable').innerHTML = '';
-            document.getElementById('priceTable').appendChild(table);
-            
-            // Subtract annual spending from revenue
+            // Subtract annual spending from total revenue
             totalRevenue -= annualSpending;
-            
+
             document.getElementById('hoursCount').textContent = hoursCount;
             document.getElementById('totalIncome').textContent = totalIncome.toFixed(2);
             document.getElementById('totalRevenue').textContent = totalRevenue.toFixed(2);
