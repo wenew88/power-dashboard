@@ -3,226 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Power Plant Dashboard</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <title>Gas Engine Calculator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            background-color: #f0f2f5;
+            background-color: #f5f5f5;
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            background-color: white;
             padding: 20px;
-        }
-        .card {
-            background: white;
-            padding: 20px;
-            margin-bottom: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
         .input-group {
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
-        .input-group label {
-            display: block;
-            margin-bottom: 5px;
+        label {
+            display: inline-block;
+            width: 200px;
             font-weight: bold;
         }
-        .input-group input {
+        input {
+            padding: 5px;
+            width: 150px;
+        }
+        .result-row {
+            margin: 5px 0;
+        }
+        .price-table {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        table {
+            border-collapse: collapse;
             width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
             padding: 8px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
+            text-align: right;
         }
-        .results {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+        .highlighted {
+            background-color: #90EE90;
         }
-        .result-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 4px;
-        }
-        .result-item h3 {
-            margin-top: 0;
-            color: #333;
-        }
-        .error {
-            background-color: #fee2e2;
-            color: #dc2626;
-            padding: 10px;
-            border-radius: 4px;
+        .summary {
+            font-weight: bold;
             margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Power Plant Analytics Dashboard</h1>
-        
-        <div class="card">
-            <h2>Input Parameters</h2>
+        <h1>Gas Engine Calculator</h1>
+
+        <!-- Variables Section -->
+        <div class="section">
+            <h2>Variables</h2>
             <div class="input-group">
-                <label>Base Price</label>
-                <input type="number" id="basePrice" value="4400">
+                <label>Gas engine (kWe):</label>
+                <input type="number" id="gasEngine" value="315" step="0.01">
             </div>
             <div class="input-group">
-                <label>Gas Price</label>
-                <input type="number" id="gasPrice" value="0">
+                <label>NG cubic meters consumption:</label>
+                <input type="number" id="ngConsumption" value="84" step="0.01">
             </div>
             <div class="input-group">
-                <label>Efficiency</label>
-                <input type="number" id="efficiency" value="0">
+                <label>Load percentage:</label>
+                <input type="number" id="loadPercentage" value="0.9" step="0.01">
             </div>
             <div class="input-group">
-                <label>Heat Output</label>
-                <input type="number" id="heatOutput" value="0">
+                <label>Gas cubic meter price:</label>
+                <input type="number" id="gasCubicPrice" value="16.5" step="0.01">
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="section">
+            <h2>Results</h2>
+            <div class="result-row">
+                <label>kWe:</label>
+                <span id="kweResult">0</span>
+            </div>
+            <div class="result-row">
+                <label>Consumption:</label>
+                <span id="consumptionResult">0</span>
+            </div>
+            <div class="result-row">
+                <label>1 kWe price:</label>
+                <span id="kWePriceResult">0</span>
+            </div>
+            <div class="result-row">
+                <label>1 MWe price:</label>
+                <span id="mWePriceResult">0</span>
+            </div>
+        </div>
+
+        <!-- Monthly Spendings Section -->
+        <div class="section">
+            <h2>Monthly Spendings</h2>
+            <div class="input-group">
+                <label>Oil:</label>
+                <input type="number" id="oilCost" value="32800">
             </div>
             <div class="input-group">
-                <label>Heat Price</label>
-                <input type="number" id="heatPrice" value="0">
+                <label>Service and parts:</label>
+                <input type="number" id="serviceCost" value="41000">
             </div>
             <div class="input-group">
-                <label>Gas Consumption</label>
-                <input type="number" id="gasConsumption" value="0">
+                <label>3 workers:</label>
+                <input type="number" id="workersCost" value="49200">
             </div>
             <div class="input-group">
-                <label>Expenses</label>
-                <input type="number" id="expenses" value="195324">
+                <label>Taxes from salary (22%):</label>
+                <input type="number" id="taxesCost" value="10824">
             </div>
             <div class="input-group">
-                <label>Excel File (with hourly prices)</label>
+                <label>etc:</label>
+                <input type="number" id="etcCost" value="61500">
+            </div>
+            <div class="result-row">
+                <label>Total Monthly Spending:</label>
+                <span id="totalSpending">0</span>
+            </div>
+        </div>
+
+        <!-- Price Analysis Section -->
+        <div class="section">
+            <h2>Price Analysis</h2>
+            <div class="input-group">
+                <label>Minimum Price:</label>
+                <input type="number" id="minPrice" value="5000" step="0.01">
+            </div>
+            <div class="input-group">
+                <label>Upload Excel File:</label>
                 <input type="file" id="excelFile" accept=".xlsx,.xls">
             </div>
-        </div>
-
-        <div id="results" class="card" style="display: none;">
-            <h2>Results</h2>
-            <div class="results" id="resultsGrid">
-                <!-- Results will be inserted here -->
+            <div id="priceTable" class="price-table">
+                <!-- Table will be generated here -->
+            </div>
+            <div class="summary">
+                <div>Hours above minimum price: <span id="hoursCount">0</span></div>
+                <div>Total Income: <span id="totalIncome">0</span></div>
+                <div>Total Revenue: <span id="totalRevenue">0</span></div>
             </div>
         </div>
-
-        <div id="error" class="error" style="display: none;"></div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
+        // Calculate results based on inputs
+        function calculateResults() {
+            const gasEngine = parseFloat(document.getElementById('gasEngine').value);
+            const ngConsumption = parseFloat(document.getElementById('ngConsumption').value);
+            const loadPercentage = parseFloat(document.getElementById('loadPercentage').value);
+            const gasCubicPrice = parseFloat(document.getElementById('gasCubicPrice').value);
+
+            // Calculate results
+            const kwe = gasEngine * loadPercentage;
+            const consumption = ngConsumption * loadPercentage;
+            const kwePrice = (ngConsumption * gasCubicPrice) / gasEngine;
+            const mwePrice = kwePrice * 1000;
+
+            // Update results display
+            document.getElementById('kweResult').textContent = kwe.toFixed(2);
+            document.getElementById('consumptionResult').textContent = consumption.toFixed(2);
+            document.getElementById('kWePriceResult').textContent = kwePrice.toFixed(2);
+            document.getElementById('mWePriceResult').textContent = mwePrice.toFixed(2);
+
+            calculateSpending();
+        }
+
+        // Calculate total spending
+        function calculateSpending() {
+            const costs = [
+                'oilCost', 'serviceCost', 'workersCost', 
+                'taxesCost', 'etcCost'
+            ].map(id => parseFloat(document.getElementById(id).value) || 0);
+
+            const total = costs.reduce((sum, cost) => sum + cost, 0);
+            document.getElementById('totalSpending').textContent = total.toFixed(2);
+        }
+
+        // Process Excel file
         document.getElementById('excelFile').addEventListener('change', function(e) {
             const file = e.target.files[0];
             const reader = new FileReader();
 
             reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheet2 = workbook.Sheets['Sheet2'];
-                    const jsonData = XLSX.utils.sheet_to_json(sheet2, { header: 1 });
-                    
-                    processData(jsonData);
-                } catch (err) {
-                    showError('Error processing file. Please ensure correct format.');
-                    console.error(err);
-                }
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet2 = workbook.Sheets['Sheet2'];
+                const jsonData = XLSX.utils.sheet_to_json(sheet2, { header: 1 });
+                
+                displayPriceTable(jsonData);
+                analyzePrices(jsonData);
             };
 
             reader.readAsArrayBuffer(file);
         });
 
-        function getInputs() {
-            return {
-                basePrice: Number(document.getElementById('basePrice').value),
-                gasPrice: Number(document.getElementById('gasPrice').value),
-                efficiency: Number(document.getElementById('efficiency').value),
-                heatOutput: Number(document.getElementById('heatOutput').value),
-                heatPrice: Number(document.getElementById('heatPrice').value),
-                gasConsumption: Number(document.getElementById('gasConsumption').value),
-                expenses: Number(document.getElementById('expenses').value)
-            };
+        // Display price table with highlighting
+        function displayPriceTable(data) {
+            const table = document.createElement('table');
+            const minPrice = parseFloat(document.getElementById('minPrice').value);
+
+            // Create header row
+            const headerRow = document.createElement('tr');
+            headerRow.innerHTML = '<th>Day</th>' + Array.from({length: 24}, (_, i) => 
+                `<th>Hour ${i+1}</th>`).join('');
+            table.appendChild(headerRow);
+
+            // Create data rows
+            for (let i = 1; i < data.length; i++) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${i}</td>` + 
+                    data[i].slice(1).map(price => 
+                        `<td class="${price > minPrice ? 'highlighted' : ''}">${price}</td>`
+                    ).join('');
+                table.appendChild(row);
+            }
+
+            document.getElementById('priceTable').innerHTML = '';
+            document.getElementById('priceTable').appendChild(table);
         }
 
-        function calculateDerivedValues(inputs) {
-            const gasConsumptionHour = inputs.gasConsumption * 3.6;
-            const gasCostHour = gasConsumptionHour * inputs.gasPrice;
-            const heatRevenue = inputs.heatOutput * inputs.heatPrice;
-            const operatingCostHour = gasCostHour - heatRevenue;
-            return { gasConsumptionHour, gasCostHour, heatRevenue, operatingCostHour };
-        }
-
-        function processData(jsonData) {
-            const inputs = getInputs();
-            const derived = calculateDerivedValues(inputs);
+        // Analyze prices and calculate totals
+        function analyzePrices(data) {
+            const minPrice = parseFloat(document.getElementById('minPrice').value);
+            const mwePrice = parseFloat(document.getElementById('mWePriceResult').textContent);
             
-            let profitable_hours = 0;
-            let total_revenue = 0;
-            let peak_price = 0;
-            let peak_hour = '';
+            let hoursCount = 0;
+            let totalIncome = 0;
+            let totalRevenue = 0;
 
-            for (let row = 1; row < jsonData.length; row++) {
-                for (let col = 1; col < jsonData[row].length; col++) {
-                    const price = jsonData[row][col];
-                    const hourlyProfit = price - inputs.basePrice - derived.operatingCostHour;
-                    
-                    if (price > 5000) {
-                        profitable_hours++;
-                        total_revenue += hourlyProfit;
-                        
-                        if (price > peak_price) {
-                            peak_price = price;
-                            peak_hour = `Day ${row} Hour ${col}`;
-                        }
+            for (let i = 1; i < data.length; i++) {
+                for (let j = 1; j < data[i].length; j++) {
+                    const price = data[i][j];
+                    if (price > minPrice) {
+                        hoursCount++;
+                        totalIncome += price;
+                        totalRevenue += (price - mwePrice);
                     }
                 }
             }
 
-            const net_profit = total_revenue - inputs.expenses;
-
-            displayResults({
-                profitable_hours,
-                total_revenue,
-                net_profit,
-                peak_price,
-                peak_hour,
-                derived
-            });
+            document.getElementById('hoursCount').textContent = hoursCount;
+            document.getElementById('totalIncome').textContent = totalIncome.toFixed(2);
+            document.getElementById('totalRevenue').textContent = totalRevenue.toFixed(2);
         }
 
-        function displayResults(results) {
-            const resultsGrid = document.getElementById('resultsGrid');
-            resultsGrid.innerHTML = '';
+        // Add event listeners for all inputs
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('change', calculateResults);
+        });
 
-            // Add main results
-            addResultItem('Profitable Hours', results.profitable_hours);
-            addResultItem('Total Revenue', results.total_revenue.toFixed(2));
-            addResultItem('Net Profit', results.net_profit.toFixed(2));
-            addResultItem('Peak Price', results.peak_price + '<br><small>' + results.peak_hour + '</small>');
-
-            // Add derived values
-            Object.entries(results.derived).forEach(([key, value]) => {
-                const label = key.replace(/([A-Z])/g, ' $1').toUpperCase();
-                addResultItem(label, value.toFixed(2));
-            });
-
-            document.getElementById('results').style.display = 'block';
-            document.getElementById('error').style.display = 'none';
-        }
-
-        function addResultItem(label, value) {
-            const div = document.createElement('div');
-            div.className = 'result-item';
-            div.innerHTML = `<h3>${label}</h3><p>${value}</p>`;
-            document.getElementById('resultsGrid').appendChild(div);
-        }
-
-        function showError(message) {
-            const errorDiv = document.getElementById('error');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-            document.getElementById('results').style.display = 'none';
-        }
+        // Initial calculation
+        calculateResults();
     </script>
 </body>
 </html>
