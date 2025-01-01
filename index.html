@@ -244,14 +244,20 @@
             let hoursCount = 0;
             let totalIncome = 0;
             let totalRevenue = 0;
+            const kweValue = parseFloat(document.getElementById('kweResult').textContent);
 
             for (let i = 1; i < data.length; i++) {
                 for (let j = 1; j < data[i].length; j++) {
                     const price = data[i][j];
                     if (price > minPrice) {
                         hoursCount++;
-                        totalIncome += price;
-                        totalRevenue += (price - mwePrice);
+                        // Calculate income: (price/1000) * kWe value
+                        const hourIncome = (price/1000) * kweValue;
+                        totalIncome += hourIncome;
+                        
+                        // Calculate revenue: ((price - MWe price)/1000) * kWe value
+                        const hourRevenue = ((price - mwePrice)/1000) * kweValue;
+                        totalRevenue += hourRevenue;
                     }
                 }
             }
