@@ -250,6 +250,8 @@
             let totalIncome = 0;
             let totalRevenue = 0;
             const kweValue = parseFloat(document.getElementById('kweResult').textContent);
+            const monthlySpending = parseFloat(document.getElementById('totalSpending').textContent);
+            const annualSpending = monthlySpending * 12;
 
             for (let i = 1; i < data.length; i++) {
                 for (let j = 1; j < data[i].length; j++) {
@@ -266,6 +268,9 @@
                     }
                 }
             }
+
+            // Subtract annual spending from total revenue
+            totalRevenue -= annualSpending;
 
             document.getElementById('hoursCount').textContent = hoursCount;
             document.getElementById('totalIncome').textContent = totalIncome.toFixed(2);
