@@ -158,10 +158,11 @@
         }
 
         function calculateSpending() {
+            const engineCount = parseFloat(document.getElementById('engineCount').value);
             const costs = [
                 'oilCost', 'serviceCost', 'workersCost', 
                 'taxCost', 'otherCost'
-            ].map(id => parseFloat(document.getElementById(id).value) || 0);
+            ].map(id => (parseFloat(document.getElementById(id).value) || 0) * engineCount);
 
             const total = costs.reduce((sum, cost) => sum + cost, 0);
             document.getElementById('totalSpending').textContent = total.toFixed(2);
