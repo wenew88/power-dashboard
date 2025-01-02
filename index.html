@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Power Plant Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         body { font-family: Arial; margin: 20px; background: #f5f5f5; }
         .container { max-width: 1400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
@@ -15,6 +16,7 @@
         .highlighted { background-color: #90EE90; }
         .results { font-weight: bold; margin: 15px 0; }
         .table-container { overflow-x: auto; max-height: 600px; overflow-y: auto; }
+        #loading { display: none; color: #666; margin: 10px 0; }
     </style>
 </head>
 <body>
@@ -104,6 +106,7 @@
                 <div>Annual Revenue (after expenses): <span id="totalRevenue">0</span></div>
             </div>
 
+            <div id="loading">Loading price data...</div>
             <div class="table-container">
                 <div id="priceTable">
                     <!-- Table will be populated by JavaScript -->
@@ -113,8 +116,25 @@
     </div>
 
     <script>
-        // Embedded price data from CSV
-        const priceData = [[57,57,55.55,38,32,30,30,65,200,246,246,90,90,93,160,600,960,1210,999,720,470,140,68,70],[26,11,11,11,11,11.01,28,205,2700,3000,2489,2415,2415,2489,2862,2989,3200,3499,3286,3200,2750,2489,68,70],[26,20,10,10,10,10,1000,2540,3200,3600,3297,2989,2900,3111.66,3300,3400,3499,3600,3600,3499,3290,2900,2000,1600],[2090,1995,147,20,10,10,1995,2455,2090,2300,2079,2000,1880,2005,2300,2500,2537,2537,2537,2537,2300,1650,2090,2090],[2090,1600,200,200,100,20,1200,2400,2090,2100,1995,1995,1992,1995,2090,2900,3200,2989,2989,2989,2489,2090,2489,2489],[2489,500,63,10,10,10,10,99,99,739,990,739,680,1799,2090,2489,3000,3095,3000,2600,2090,1990,2090,1990],[2090,1100,300,87,200,200,200,34,1750,2550,2950,2989,2989,2989,2989,2989,3354,3650,3354,3350,3354,2554,2000,2060],[2599,2090,1600,1000,1200,2090,2734,3199,4500,6277.54,6520,5164,4948.83,4952.46,4950.04,4951.44,4953.47,6446.5,6417.62,5644,5700,4100,2700,2719],[2695,2500,2499,2090,2090,2500,2773.77,3354,4100,4100,3354,2998,2695,2700,3597,4950,5588,7214.22,6591,6529,7100,5900,3200,2988],[2735,2695,2695,2499,2650,2695,2900,3500,4950,6031.19,4950,4000,3700,4000,4950,5498.69,5600,7213.39,7000,6637,6837.64,6700,4950,3000],[2800,2825.45,2771.37,2755,2770.38,2826.63,3000,3597,5600,6667.31,6824.4,5600,5600,5600,5600,5600,5600,6700,6365.94,6127,6222.8,6688,7302.82,3000], /* ... Rest of data ... */];
+        let priceData = [];
+
+        async function loadPriceData() {
+            document.getElementById('loading').style.display = 'block';
+            try {
+                const response = await fetch('d24.csv');
+                const text = await response.text();
+                priceData = Papa.parse(text, {
+                    header: false,
+                    dynamicTyping: true,
+                    skipEmptyLines: true
+                }).data;
+                updateAnalysis();
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading CSV:', error);
+                document.getElementById('loading').textContent = 'Error loading price data';
+            }
+        }
 
         function calculateResults() {
             const engineCount = parseFloat(document.getElementById('engineCount').value);
@@ -123,13 +143,11 @@
             const loadPercentage = parseFloat(document.getElementById('loadPercentage').value);
             const gasPrice = parseFloat(document.getElementById('gasPrice').value);
 
-            // Calculate results
             const kwe = gasEngine * loadPercentage * engineCount;
             const consumption = ngConsumption * loadPercentage * engineCount;
             const kwePrice = (ngConsumption * gasPrice) / gasEngine;
             const mwePrice = kwePrice * 1000;
 
-            // Update display
             document.getElementById('kweResult').textContent = kwe.toFixed(2);
             document.getElementById('consumptionResult').textContent = consumption.toFixed(2);
             document.getElementById('kWePriceResult').textContent = kwePrice.toFixed(2);
@@ -151,6 +169,8 @@
         }
 
         function updateAnalysis() {
+            if (!priceData.length) return;
+
             const minPrice = parseFloat(document.getElementById('minPrice').value);
             const mwePrice = parseFloat(document.getElementById('mWePriceResult').textContent);
             const kweValue = parseFloat(document.getElementById('kweResult').textContent);
@@ -161,14 +181,12 @@
             let totalIncome = 0;
             let totalRevenue = 0;
 
-            // Create table
             const table = document.createElement('table');
             const headerRow = document.createElement('tr');
             headerRow.innerHTML = '<th>Day</th>' + Array.from({length: 24}, (_, i) => 
                 `<th>${i+1}</th>`).join('');
             table.appendChild(headerRow);
 
-            // Process data and create rows
             priceData.forEach((dayPrices, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `<td>${index + 1}</td>`;
@@ -189,7 +207,6 @@
                 table.appendChild(row);
             });
 
-            // Update display
             document.getElementById('priceTable').innerHTML = '';
             document.getElementById('priceTable').appendChild(table);
             
@@ -205,7 +222,8 @@
             input.addEventListener('change', calculateResults);
         });
 
-        // Initial calculation
+        // Initial load
+        loadPriceData();
         calculateResults();
     </script>
 </body>
