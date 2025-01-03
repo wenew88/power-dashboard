@@ -16,6 +16,10 @@
         .highlighted { background-color: #90EE90; }
         .results { font-weight: bold; margin: 15px 0; }
         .table-container { overflow-x: auto; max-height: 600px; overflow-y: auto; }
+        .monthly-summary { margin: 20px 0; }
+        .monthly-summary table { width: auto; margin: 10px 0; }
+        .monthly-summary td { padding: 5px 15px; }
+        .monthly-summary h3 { margin: 0 0 10px 0; }
         #loading { display: none; color: #666; margin: 10px 0; }
     </style>
 </head>
@@ -216,6 +220,45 @@
             document.getElementById('hourCount').textContent = hoursCount;
             document.getElementById('totalIncome').textContent = totalIncome.toFixed(2);
             document.getElementById('totalRevenue').textContent = totalRevenue.toFixed(2);
+
+            // Create monthly summary table
+            const monthlyTable = document.createElement('table');
+            monthlyTable.innerHTML = '<tr><th>Month</th><th>Income</th></tr>';
+            
+            const monthlyIncome = Array(12).fill(0);
+            const daysPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+            let dayCounter = 0;
+
+            daysPerMonth.forEach((days, monthIndex) => {
+                for(let day = 0; day < days; day++) {
+                    const dayData = priceData[dayCounter];
+                    if (dayData) {
+                        dayData.forEach(price => {
+                            if (price > minPrice) {
+                                monthlyIncome[monthIndex] += (price/1000) * kweValue;
+                            }
+                        });
+                    }
+                    dayCounter++;
+                }
+            });
+
+            monthlyIncome.forEach((income, index) => {
+                const monthName = new Date(2024, index).toLocaleString('default', { month: 'long' });
+                monthlyTable.innerHTML += `<tr><td>${monthName}</td><td>${income.toFixed(2)}</td></tr>`;
+            });
+
+            const monthlyDiv = document.createElement('div');
+            monthlyDiv.className = 'monthly-summary';
+            monthlyDiv.innerHTML = '<h3>Monthly Income Summary</h3>';
+            monthlyDiv.appendChild(monthlyTable);
+
+            const existingMonthly = document.querySelector('.monthly-summary');
+            if (existingMonthly) {
+                existingMonthly.replaceWith(monthlyDiv);
+            } else {
+                document.getElementById('priceTable').parentNode.insertBefore(monthlyDiv, document.getElementById('priceTable'));
+            }
         }
 
         // Add event listeners
