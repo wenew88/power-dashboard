@@ -202,10 +202,9 @@
                     
                     if (isHighlighted) {
                         hoursCount++;
-                        const hourIncome = (price/1000) * kweValue;
+                        // Income = (price - MWe price) * kweValue / 1000
+                        const hourIncome = ((price - mwePrice)/1000) * kweValue;
                         totalIncome += hourIncome;
-                        const hourRevenue = ((price - mwePrice)/1000) * kweValue;
-                        totalRevenue += hourRevenue;
                     }
                 });
                 
@@ -230,7 +229,7 @@
             const daysPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
             let dayCounter = 0;
 
-            const monthlyExpenses = monthlySpending; // Get monthly expenses once
+            const monthlyExpenses = monthlySpending;
 
             daysPerMonth.forEach((days, monthIndex) => {
                 for(let day = 0; day < days; day++) {
@@ -238,17 +237,16 @@
                     if (dayData) {
                         dayData.forEach(price => {
                             if (price > minPrice) {
-                                const hourIncome = (price/1000) * kweValue;
-                                const hourRevenue = ((price - mwePrice)/1000) * kweValue;
+                                // Income = (price - MWe price) * kweValue / 1000
+                                const hourIncome = ((price - mwePrice)/1000) * kweValue;
                                 monthlyIncome[monthIndex] += hourIncome;
-                                monthlyRevenue[monthIndex] += hourRevenue;
                             }
                         });
                     }
                     dayCounter++;
                 }
-                // Subtract monthly expenses from revenue
-                monthlyRevenue[monthIndex] -= monthlyExpenses;
+                // Revenue = Income - Monthly Expenses
+                monthlyRevenue[monthIndex] = monthlyIncome[monthIndex] - monthlyExpenses;
             });
 
             monthlyIncome.forEach((income, index) => {
@@ -261,6 +259,9 @@
                         <td style="color: ${revenue >= 0 ? 'green' : 'red'}">${revenue.toFixed(2)}</td>
                     </tr>`;
             });
+
+            // Annual revenue = Total Income - (Monthly Spending * 12)
+            totalRevenue = totalIncome - (monthlySpending * 12);
 
             const monthlyDiv = document.createElement('div');
             monthlyDiv.className = 'monthly-summary';
