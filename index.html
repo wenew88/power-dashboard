@@ -52,11 +52,11 @@
         <h2>Results</h2>
         <div class="section">
             <div>
-                <label>kWe:</label>
+                <label>Generation kWe:</label>
                 <span id="kweResult">0</span>
             </div>
             <div>
-                <label>Consumption:</label>
+                <label>Consumption (m³):</label>
                 <span id="consumptionResult">0</span>
             </div>
             <div>
@@ -223,11 +223,14 @@
 
             // Create monthly summary table
             const monthlyTable = document.createElement('table');
-            monthlyTable.innerHTML = '<tr><th>Month</th><th>Income</th></tr>';
+            monthlyTable.innerHTML = '<tr><th>Month</th><th>Income</th><th>Revenue</th></tr>';
             
             const monthlyIncome = Array(12).fill(0);
+            const monthlyRevenue = Array(12).fill(0);
             const daysPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
             let dayCounter = 0;
+
+            const monthlyExpenses = monthlySpending; // Get monthly expenses once
 
             daysPerMonth.forEach((days, monthIndex) => {
                 for(let day = 0; day < days; day++) {
@@ -235,17 +238,28 @@
                     if (dayData) {
                         dayData.forEach(price => {
                             if (price > minPrice) {
-                                monthlyIncome[monthIndex] += (price/1000) * kweValue;
+                                const hourIncome = (price/1000) * kweValue;
+                                const hourRevenue = ((price - mwePrice)/1000) * kweValue;
+                                monthlyIncome[monthIndex] += hourIncome;
+                                monthlyRevenue[monthIndex] += hourRevenue;
                             }
                         });
                     }
                     dayCounter++;
                 }
+                // Subtract monthly expenses from revenue
+                monthlyRevenue[monthIndex] -= monthlyExpenses;
             });
 
             monthlyIncome.forEach((income, index) => {
                 const monthName = new Date(2024, index).toLocaleString('default', { month: 'long' });
-                monthlyTable.innerHTML += `<tr><td>${monthName}</td><td>${income.toFixed(2)}</td></tr>`;
+                const revenue = monthlyRevenue[index];
+                monthlyTable.innerHTML += `
+                    <tr>
+                        <td>${monthName}</td>
+                        <td>${income.toFixed(2)}</td>
+                        <td style="color: ${revenue >= 0 ? 'green' : 'red'}">${revenue.toFixed(2)}</td>
+                    </tr>`;
             });
 
             const monthlyDiv = document.createElement('div');
