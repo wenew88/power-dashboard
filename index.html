@@ -4,466 +4,804 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Power Plant Economic Analysis Dashboard</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- React and ReactDOM -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel for JSX -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-    
-    <!-- PapaParse for CSV parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
 
-    <!-- Custom Styles -->
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+    body {
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f0f2f5;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1, h2 {
+        color: #333;
+        text-align: center;
+        font-weight: 600;
+    }
+
+    .section {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 15px;
+    }
+
+    label {
+        font-weight: 500;
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        transition: 0.3s;
+    }
+
+    input:focus, select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s ease-in-out;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    th, td {
+        padding: 10px;
+        text-align: right;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background: #f8f9fa;
+        font-weight: bold;
+    }
+
+    .highlighted {
+        background: #4CAF50;
+        color: white;
+        font-weight: bold;
+    }
+
+    .results span {
+        font-size: 16px;
+        font-weight: bold;
+        color: black; /* Ensure Total Monthly Operating Costs stays black */
+    }
+
+    .positive {
+        color: #28a745; /* Green for positive values */
+    }
+
+    .negative {
+        color: #dc3545; /* Red for negative values */
+    }
+
+    .neutral {
+        color: #6c757d;
+    }
+
+    /* Apply consistent green/red color in tables */
+    .table-value-positive {
+        color: #28a745 !important; /* Green */
+    }
+
+    .table-value-negative {
+        color: #dc3545 !important; /* Red */
+    }
+
+</style>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+    body {
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f0f2f5;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1, h2 {
+        color: #333;
+        text-align: center;
+        font-weight: 600;
+    }
+
+    .section {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 15px;
+    }
+
+    label {
+        font-weight: 500;
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        transition: 0.3s;
+    }
+
+    input:focus, select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s ease-in-out;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    th, td {
+        padding: 10px;
+        text-align: right;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background: #f8f9fa;
+        font-weight: bold;
+    }
+
+    .highlighted {
+        background: #4CAF50;
+        color: white;
+        font-weight: bold;
+    }
+
+    .results span {
+        font-size: 16px;
+        font-weight: bold;
+        color: #007bff;
+    }
+
+    .positive {
+        color: #28a745;
+    }
+
+    .negative {
+        color: #dc3545;
+    }
+
+    .neutral {
+        color: #6c757d;
+    }
+
+</style>
+<style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5; 
         }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 15px;
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
         }
-        .card {
+        .section { 
+            margin-bottom: 30px; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
             background: white;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        table {
-            font-size: 12px;
+        .section-title { 
+            color: #2c3e50; 
+            margin-bottom: 15px; 
+            padding-bottom: 8px;
+            font-weight: 600;
         }
-        input, select {
+        label { 
+            display: inline-block; 
+            width: 200px; 
+            font-weight: bold; 
+            margin-bottom: 5px;
+        }
+        input { 
+            padding: 8px; 
+            width: 150px; 
+            margin-bottom: 10px;
             border: 1px solid #ddd;
-            padding: 8px;
             border-radius: 4px;
         }
-        .text-danger { color: #dc3545; }
-        .text-success { color: #28a745; }
+        select { 
+            padding: 8px; 
+            width: 200px; 
+            margin-bottom: 10px; 
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        table { 
+            border-collapse: collapse; 
+            width: 100%; 
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 8px; 
+            text-align: right; 
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .highlighted { 
+            background-color: #90EE90; 
+        }
+        .results { 
+            font-weight: bold; 
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        .table-container { 
+            overflow-x: auto; 
+            max-height: 600px; 
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .monthly-summary { 
+            margin: 20px 0; 
+        }
+        .monthly-summary table { 
+            width: auto; 
+            margin: 10px 0; 
+        }
+        .monthly-summary td { 
+            padding: 8px 15px; 
+        }
+        .monthly-summary h3 { 
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        #loading { 
+            display: none; 
+            color: #666; 
+            margin: 10px 0; 
+            font-style: italic; 
+        }
+        .financial-metric { 
+            margin-top: 10px;
+            padding: 5px 0;
+        }
+        .metric-value { 
+            font-weight: bold;
+            padding: 0 5px;
+        }
+        .info-text { 
+            font-size: 12px; 
+            color: #666; 
+            margin-top: 5px; 
+        }
+        .positive { color: #28a745; }
+        .negative { color: #dc3545; }
+        .neutral { color: #6c757d; }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div class="container">
+        <h1 class="section-title">Power Plant Economic Analysis Dashboard</h1>
+        
+        <h2 class="section-title">Input Parameters</h2>
+        <div class="section">
+            <div>
+                <label>Number of Engines:</label>
+                <input type="number" id="engineCount" value="1" min="1">
+            </div>
+            <div>
+                <label>Engine type:</label>
+                <select id="engineType" onchange="updateEngineValues()">
+                    <option value="wartsila">Wärtsilä W16V25SG (3000 kWe)</option>
+                    <option value="dha" selected>DHA (315 kWe)</option>
+                    <option value="jenbacher">Jenbacher 612 (2200 kWe)</option>
+                </select>
+            </div>
+            <div>
+                <label>Gas Engine (kWe):</label>
+                <input type="number" id="gasEngine" value="315">
+            </div>
+            <div>
+                <label>Engine price:</label>
+                <input type="number" id="enginePrice" value="2000000">
+            </div>
+            <div>
+                <label>NG consumption (m³):</label>
+                <input type="number" id="ngConsumption" value="84">
+            </div>
+            <div>
+                <label>Load (%):</label>
+                <input type="number" id="loadPercentage" value="0.9" step="0.1" max="1">
+            </div>
+            <div>
+                <label>Gas price (per m³):</label>
+                <input type="number" id="gasPrice" value="16.5">
+            </div>
+        </div>
 
-    <!-- Mock fs API for file reading -->
+        <h2 class="section-title">Key Project Metrics</h2>
+        <div class="section">
+            <div>
+                <label>Generation kWe:</label>
+                <span id="kweResult">0</span>
+            </div>
+            <div>
+                <label>Consumption (m³):</label>
+                <span id="consumptionResult">0</span>
+            </div>
+            <div>
+                <label>Investment+20%:</label>
+                <span id="investmentResult">0</span>
+            </div>
+            <div>
+                <label>1 kWe price:</label>
+                <span id="kWePriceResult">0</span>
+            </div>
+            <div>
+                <label>1 MWe price:</label>
+                <span id="mWePriceResult">0</span>
+            </div>
+        </div>
+
+        <h2 class="section-title">Monthly Operating Costs</h2>
+        <div class="section">
+            <div>
+                <label>Oil:</label>
+                <input type="number" id="oilCost" value="32800">
+            </div>
+            <div>
+                <label>Service and parts:</label>
+                <input type="number" id="serviceCost" value="41000">
+            </div>
+            <div>
+                <label>Workers (3):</label>
+                <input type="number" id="workersCost" value="49200">
+            </div>
+            <div>
+                <label>Salary taxes (22%):</label>
+                <input type="number" id="taxCost" value="10824">
+            </div>
+            <div>
+                <label>Other expenses:</label>
+                <input type="number" id="otherCost" value="61500">
+            </div>
+            <div class="results">
+                <label>Total Monthly Operating Costs:</label>
+                <span id="totalSpending">0</span>
+            </div>
+        </div>
+
+        <h2 class="section-title">Financial Performance</h2>
+        <div class="section">
+            <div>
+                <label>Minimum Price:</label>
+                <input type="number" id="minPrice" value="5000" onchange="updateAnalysis()">
+            </div>
+
+            <div class="results">
+                <div>Hours above minimum price: <span id="hourCount">0</span></div>
+                <div>LCOE: <span id="lcoe">0</span></div>
+                <div>Total Income: <span id="totalIncome">0</span></div>
+                <div>Annual Revenue (after expenses): <span id="totalRevenue" class="metric-value">0</span></div>
+                <div>Total VAT: <span id="totalVAT" class="metric-value">0</span></div>
+                <div>Free Cash Flow: <span id="freeCashFlow" class="metric-value">0</span></div>
+                <div>Payback Period: <span id="paybackPeriod">0</span> months</div>
+                <div class="financial-metric">ROE (Return on Equity): <span id="roe" class="metric-value">0</span>%</div>
+                <div class="financial-metric">ROA (Return on Assets): <span id="roa" class="metric-value">0</span>%</div>
+                <div class="financial-metric">ROI (Return on Investment): <span id="roi" class="metric-value">0</span>%</div>
+                <div class="financial-metric">IRR (Internal Rate of Return): <span id="irr" class="metric-value">0</span>%</div>
+                <div class="financial-metric">NPV (Net Present Value): <span id="npv" class="metric-value">0</span></div>
+            </div>
+
+            <div id="loading">Loading price data...</div>
+            
+            <div class="monthly-summary">
+                <!-- Monthly summary table will be inserted here -->
+            </div>
+
+            <div class="table-container">
+                <div id="priceTable">
+                    <!-- Price table will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        window.fs = {
-            readFile: async (filename) => {
-                try {
-                    const response = await fetch(filename);
-                    const text = await response.text();
-                    return new TextEncoder().encode(text);
-                } catch (error) {
-                    console.error('Error reading file:', error);
-                    throw error;
-                }
+        let priceData = [];
+
+        const engineSpecs = {
+            wartsila: {
+                power: 3000,
+                name: "Wärtsilä W16V25SG",
+                ngConsumption: 777,
+                price: 6000000
+            },
+            dha: {
+                power: 315,
+                name: "DHA",
+                ngConsumption: 84,
+                price: 2000000
+            },
+            jenbacher: {
+                power: 2200,
+                name: "Jenbacher 612",
+                ngConsumption: 444.30,
+                price: 5000000
             }
         };
-    </script>
 
-    <!-- React Component Script -->
-    <script type="text/babel">
-        // Import React components and hooks
-        const { useState, useEffect } = React;
-        
-        // Card components
-        const Card = ({ children, className }) => (
-            <div className={`bg-white rounded-lg shadow-sm p-4 ${className}`}>
-                {children}
-            </div>
-        );
+        function calculateNPV(cashFlows, initialInvestment, discountRate = 0.10) {
+            let npv = -initialInvestment;
+            cashFlows.forEach((cashFlow, index) => {
+                npv += cashFlow / Math.pow(1 + discountRate, index + 1);
+            });
+            return npv;
+        }
 
-        const CardHeader = ({ children }) => (
-            <div className="mb-4">{children}</div>
-        );
-
-        const CardTitle = ({ children }) => (
-            <h2 className="text-xl font-semibold">{children}</h2>
-        );
-
-        const CardContent = ({ children }) => (
-            <div>{children}</div>
-        );
-
-        // Main Dashboard Component
-        const PowerPlantDashboard = () => {
-            // Engine specifications
-            const engineSpecs = {
-                wartsila: {
-                    name: 'Wärtsilä W16V25SG',
-                    power: 3000,
-                    consumption: 777,
-                    price: 6000000
-                },
-                dha: {
-                    name: 'DHA',
-                    power: 315,
-                    consumption: 84,
-                    price: 2000000
-                },
-                jenbacher: {
-                    name: 'Jenbacher 612',
-                    power: 2200,
-                    consumption: 444.30,
-                    price: 5000000
+        function calculateIRR(cashFlows, initialInvestment, precision = 0.01) {
+            let low = -1;
+            let high = 1;
+            let guess = (low + high) / 2;
+            let npv = 0;
+            let maxIterations = 100;
+            
+            while (maxIterations > 0) {
+                npv = -initialInvestment;
+                for (let i = 0; i < cashFlows.length; i++) {
+                    npv += cashFlows[i] / Math.pow(1 + guess, i + 1);
                 }
-            };
+                
+                if (Math.abs(npv) < precision) {
+                    return guess * 100;
+                }
+                
+                if (npv > 0) {
+                    low = guess;
+                } else {
+                    high = guess;
+                }
+                
+                guess = (low + high) / 2;
+                maxIterations--;
+            }
+            
+            return guess * 100;
+        }
 
-            // State management
-            const [priceData, setPriceData] = useState([]);
-            const [inputs, setInputs] = useState({
-                engineCount: 1,
-                engineType: 'wartsila',
-                load: 100,
-                gasPrice: 1.0,
-                minPrice: 5000
-            });
+        function calculateROI(totalReturn, initialInvestment) {
+            return ((totalReturn - initialInvestment) / initialInvestment) * 100;
+        }
 
-            const [monthlySpending, setMonthlySpending] = useState({
-                oil: 32800,
-                serviceParts: 41000,
-                workers: 49200,
-                salaryTaxes: 10824,
-                otherExpenses: 61500
-            });
+        function updateEngineValues() {
+            const selectedEngine = document.getElementById('engineType').value;
+            document.getElementById('gasEngine').value = engineSpecs[selectedEngine].power;
+            document.getElementById('ngConsumption').value = engineSpecs[selectedEngine].ngConsumption;
+            document.getElementById('enginePrice').value = engineSpecs[selectedEngine].price;
+            calculateResults();
+        }
 
-            // Load CSV data
-            useEffect(() => {
-                const loadData = async () => {
-                    try {
-                        const response = await window.fs.readFile('d24.csv');
-                        const text = new TextDecoder().decode(response);
+        async function loadPriceData() {
+            document.getElementById('loading').style.display = 'block';
+            try {
+                const response = await fetch('d24.csv');
+                const text = await response.text();
+                priceData = Papa.parse(text, {
+                    header: false,
+                    dynamicTyping: true,
+                    skipEmptyLines: true
+                }).data;
+                updateAnalysis();
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading CSV:', error);
+                document.getElementById('loading').textContent = 'Error loading price data';
+            }
+        }
+
+        function calculateResults() {
+            const engineCount = parseFloat(document.getElementById('engineCount').value);
+            const gasEngine = parseFloat(document.getElementById('gasEngine').value);
+            const ngConsumption = parseFloat(document.getElementById('ngConsumption').value);
+            const enginePrice = parseFloat(document.getElementById('enginePrice').value);
+            const loadPercentage = parseFloat(document.getElementById('loadPercentage').value);
+            const gasPrice = parseFloat(document.getElementById('gasPrice').value);
+
+            const kwe = gasEngine * loadPercentage * engineCount;
+            const consumption = ngConsumption * loadPercentage * engineCount;
+            const investment = enginePrice * engineCount * 1.2;
+            const kwePrice = (ngConsumption * gasPrice) / gasEngine;
+            const mwePrice = kwePrice * 1000;
+
+            document.getElementById('kweResult').textContent = kwe.toFixed(2);
+            document.getElementById('consumptionResult').textContent = consumption.toFixed(2);
+            document.getElementById('investmentResult').textContent = investment.toFixed(2);
+            document.getElementById('kWePriceResult').textContent = kwePrice.toFixed(2);
+            document.getElementById('mWePriceResult').textContent = mwePrice.toFixed(2);
+
+            calculateSpending();
+            updateAnalysis();
+        }
+
+        function calculateSpending() {
+            const engineCount = parseFloat(document.getElementById('engineCount').value);
+            const costs = [
+                'oilCost', 'serviceCost', 'workersCost', 
+                'taxCost', 'otherCost'
+            ].map(id => (parseFloat(document.getElementById(id).value) || 0) * engineCount);
+
+            const total = costs.reduce((sum, cost) => sum + cost, 0);
+            document.getElementById('totalSpending').textContent = total.toFixed(2);
+            updateAnalysis();
+        }
+
+        function updateAnalysis() {
+            if (!priceData.length) return;
+
+            const minPrice = parseFloat(document.getElementById('minPrice').value);
+            const mwePrice = parseFloat(document.getElementById('mWePriceResult').textContent);
+            const kweValue = parseFloat(document.getElementById('kweResult').textContent);
+            const monthlySpending = parseFloat(document.getElementById('totalSpending').textContent);
+            const totalInvestment = parseFloat(document.getElementById('investmentResult').textContent);
+            
+            let hoursCount = 0;
+            let totalIncome = 0;
+            let cumulativeRevenue = 0;
+
+            const monthlyTable = document.createElement('table');
+            monthlyTable.innerHTML = '<tr><th>Month</th><th>kWe sold</th><th>Gas cost</th><th>Gas VAT</th><th>Electricity VAT</th><th>Net VAT</th><th>Income</th><th>Revenue</th><th>Break-even</th></tr>';
+            
+            const monthlyIncome = Array(12).fill(0);
+            const monthlyRevenue = Array(12).fill(0);
+            const monthlyBreakeven = Array(12).fill(0);
+            const hoursAboveMinPricePerMonth = Array(12).fill(0);
+            const monthlyGasCost = Array(12).fill(0);
+            const monthlyGasVAT = Array(12).fill(0);
+            const monthlyElectricityVAT = Array(12).fill(0);
+            const monthlyNetVAT = Array(12).fill(0);
+            
+            const gasPrice = parseFloat(document.getElementById('gasPrice').value);
+            const consumption = parseFloat(document.getElementById('consumptionResult').textContent);
+            const daysPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+            let dayCounter = 0;
+
+            const priceTable = document.createElement('table');
+            const headerRow = document.createElement('tr');
+            headerRow.innerHTML = '<th>Day</th>' + Array.from({length: 24}, (_, i) => `<th>${i+1}</th>`).join('');
+            priceTable.appendChild(headerRow);
+
+            daysPerMonth.forEach((days, monthIndex) => {
+                for(let day = 0; day < days; day++) {
+                    if (dayCounter >= priceData.length) break;
+                    
+                    const dayPrices = priceData[dayCounter];
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${dayCounter + 1}</td>`;
+                    
+                    dayPrices.forEach((price, hour) => {
+                        const isHighlighted = price > minPrice;
+                        row.innerHTML += `<td class="${isHighlighted ? 'highlighted' : ''}">${price}</td>`;
                         
-                        Papa.parse(text, {
-                            header: true,
-                            dynamicTyping: true,
-                            skipEmptyLines: true,
-                            complete: (results) => {
-                                setPriceData(results.data);
-                            },
-                            error: (error) => {
-                                console.error('Error parsing CSV:', error);
-                            }
-                        });
-                    } catch (error) {
-                        console.error('Error reading file:', error);
+                        if (isHighlighted) {
+                            hoursCount++;
+                            hoursAboveMinPricePerMonth[monthIndex]++;
+                            const hourIncome = ((price - mwePrice)/1000) * kweValue;
+                            const hourGasCost = consumption * gasPrice;
+                            const hourGasVAT = hourGasCost * 0.2;
+                            const hourElectricityVAT = hourIncome * 0.2;
+                            const hourNetVAT = hourGasVAT - hourElectricityVAT;
+                            
+                            totalIncome += hourIncome;
+                            monthlyIncome[monthIndex] += hourIncome;
+                            monthlyGasCost[monthIndex] += hourGasCost;
+                            monthlyGasVAT[monthIndex] += hourGasVAT;
+                            monthlyElectricityVAT[monthIndex] += hourElectricityVAT;
+                            monthlyNetVAT[monthIndex] += hourNetVAT;
+                        }
+                    });
+                    
+                    priceTable.appendChild(row);
+                    dayCounter++;
+                }
+                monthlyRevenue[monthIndex] = monthlyIncome[monthIndex] - monthlySpending;
+                cumulativeRevenue += monthlyRevenue[monthIndex];
+                monthlyBreakeven[monthIndex] = totalInvestment - cumulativeRevenue;
+            });
+
+            monthlyIncome.forEach((income, index) => {
+                const monthName = new Date(2024, index).toLocaleString('default', { month: 'long' });
+                const revenue = monthlyRevenue[index];
+                const breakeven = monthlyBreakeven[index];
+                const monthWorkingHours = hoursAboveMinPricePerMonth[index] || 0;
+                const kWeSold = kweValue * monthWorkingHours;
+                const gasCost = monthlyGasCost[index];
+                const gasVAT = monthlyGasVAT[index];
+                const electricityVAT = monthlyElectricityVAT[index];
+                const netVAT = monthlyNetVAT[index];
+                monthlyTable.innerHTML += `
+                    <tr>
+                        <td>${monthName}</td>
+                        <td>${kWeSold.toFixed(2)}</td>
+                        <td>${gasCost.toFixed(2)}</td>
+                        <td style="color: green">+${gasVAT.toFixed(2)}</td>
+                        <td style="color: red">-${electricityVAT.toFixed(2)}</td>
+                        <td style="color: ${netVAT >= 0 ? 'green' : 'red'}">${netVAT >= 0 ? '+' : '-'}${Math.abs(netVAT).toFixed(2)}</td>
+                        <td>${income.toFixed(2)}</td>
+                        <td style="color: ${revenue >= 0 ? 'green' : 'red'}">${revenue.toFixed(2)}</td>
+                        <td style="color: ${breakeven <= 0 ? 'green' : 'red'}">${breakeven <= 0 ? '+' : '-'}${Math.abs(breakeven).toFixed(2)}</td>
+                    </tr>`;
+            });
+
+            const annualRevenue = monthlyRevenue.reduce((sum, revenue) => sum + revenue, 0);
+            const totalVAT = monthlyNetVAT.reduce((sum, vat) => sum + vat, 0);
+            const freeCashFlow = monthlyBreakeven[11];
+
+            let pricesAboveMin = [];
+            priceData.forEach(dayPrices => {
+                dayPrices.forEach(price => {
+                    if (price > minPrice) {
+                        pricesAboveMin.push(price);
                     }
-                };
+                });
+            });
+            const lcoe = pricesAboveMin.length > 0 ? 
+                (pricesAboveMin.reduce((sum, price) => sum + price, 0) / pricesAboveMin.length).toFixed(2) : 
+                "0.00";
 
-                loadData();
-            }, []);
+            let paybackPeriod = 0;
+            let cumulativeCashFlow = -totalInvestment;
+            
+            for (let i = 0; i < monthlyRevenue.length; i++) {
+                cumulativeCashFlow += monthlyRevenue[i];
+                if (cumulativeCashFlow >= 0) {
+                    paybackPeriod = i + 1;
+                    break;
+                }
+            }
+            
+            if (cumulativeCashFlow < 0) {
+                paybackPeriod = ">12";
+            }
 
-            // Results calculations
-            const calculateResults = () => {
-                const engine = engineSpecs[inputs.engineType];
-                const generation = engine.power * inputs.engineCount * (inputs.load / 100);
-                const consumption = engine.consumption * inputs.engineCount * (inputs.load / 100);
-                const investment = engine.price * inputs.engineCount * 1.2;
-                const kWePrice = investment / generation;
-                const mWePrice = kWePrice * 1000;
+            // Calculate ROE, ROA, ROI, IRR, and NPV
+            const totalEquity = totalInvestment;
+            const totalAssets = totalInvestment * 1.2;
+            const roe = annualRevenue > 0 ? (annualRevenue / totalEquity) * 100 : 0;
+            const roa = annualRevenue > 0 ? (annualRevenue / totalAssets) * 100 : 0;
+            const roi = calculateROI(annualRevenue, totalInvestment);
+            const irr = calculateIRR(monthlyRevenue, totalInvestment);
+            const npv = calculateNPV(monthlyRevenue, totalInvestment);
 
-                return {
-                    generation,
-                    consumption,
-                    investment,
-                    kWePrice,
-                    mWePrice
-                };
-            };
+            // Update display
+            document.querySelector('.monthly-summary').innerHTML = '<h3>Monthly Income Summary</h3>';
+            document.querySelector('.monthly-summary').appendChild(monthlyTable);
+            
+            document.getElementById('priceTable').innerHTML = '';
+            document.getElementById('priceTable').appendChild(priceTable);
+            
+            document.getElementById('hourCount').textContent = hoursCount;
+            document.getElementById('lcoe').textContent = lcoe;
+            document.getElementById('totalIncome').textContent = totalIncome.toFixed(2);
+            
+            // Annual Revenue styling
+            const totalRevenueElement = document.getElementById('totalRevenue');
+            totalRevenueElement.style.color = annualRevenue > 0 ? 'green' : annualRevenue < 0 ? 'red' : 'black';
+            totalRevenueElement.textContent = annualRevenue.toFixed(2);
+            
+            // Total VAT styling
+            const totalVATElement = document.getElementById('totalVAT');
+            totalVATElement.style.color = totalVAT > 0 ? 'green' : totalVAT < 0 ? 'red' : 'black';
+            totalVATElement.textContent = `${totalVAT >= 0 ? '+' : '-'}${Math.abs(totalVAT).toFixed(2)}`;
+            
+            // Free Cash Flow styling
+            const freeCashFlowElement = document.getElementById('freeCashFlow');
+            freeCashFlowElement.style.color = freeCashFlow < 0 ? 'red' : 'green';
+            freeCashFlowElement.textContent = freeCashFlow <= 0 ? `+${Math.abs(freeCashFlow).toFixed(2)}` : '0.00';
+            
+            document.getElementById('paybackPeriod').textContent = paybackPeriod;
+            document.getElementById('roe').textContent = roe.toFixed(2);
+            document.getElementById('roa').textContent = roa.toFixed(2);
+            document.getElementById('roi').textContent = roi.toFixed(2);
+            document.getElementById('irr').textContent = irr.toFixed(2);
+            document.getElementById('npv').textContent = npv.toFixed(2);
+        }
 
-            // Price and financial analysis
-            const calculateAnalysis = () => {
-                const results = calculateResults();
-                
-                // Calculate hours above minimum price
-                const hoursAboveMin = priceData.reduce((count, day) => {
-                    return count + Object.values(day).filter(price => price > inputs.minPrice).length;
-                }, 0);
+        // Add event listeners
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('change', calculateResults);
+        });
 
-                // Calculate LCOE
-                const pricesAboveMin = priceData.flatMap(day => 
-                    Object.values(day).filter(price => price > inputs.minPrice)
-                );
-                
-                const lcoe = pricesAboveMin.length > 0 
-                    ? pricesAboveMin.reduce((sum, price) => sum + price, 0) / pricesAboveMin.length 
-                    : 0;
-
-                // Calculate availability
-                const totalHours = 24 * 365;
-                const availability = (hoursAboveMin / totalHours) * 100;
-
-                // Financial calculations
-                const grossIncome = results.generation * lcoe * hoursAboveMin;
-                const monthlySpendingTotal = Object.values(monthlySpending).reduce((a, b) => a + b, 0);
-                const monthlyRevenue = grossIncome / 12 - monthlySpendingTotal;
-                const annualRevenue = grossIncome - (monthlySpendingTotal * 12);
-
-                // Performance metrics
-                const vat = monthlyRevenue * 0.2;
-                const reInvestment = monthlyRevenue > 0 ? monthlyRevenue * 0.1 : 0;
-                const paybackPeriod = results.investment / (monthlyRevenue > 0 ? monthlyRevenue : 1);
-                const roe = (annualRevenue / results.investment) * 100;
-                const roa = (annualRevenue / (results.investment * 1.2)) * 100;
-
-                return {
-                    hoursAboveMin,
-                    lcoe,
-                    grossIncome,
-                    monthlyRevenue,
-                    annualRevenue,
-                    vat,
-                    reInvestment,
-                    paybackPeriod,
-                    roe,
-                    roa,
-                    availability
-                };
-            };
-
-            const handleInputChange = (field, value) => {
-                setInputs(prev => ({
-                    ...prev,
-                    [field]: value
-                }));
-            };
-
-            const handleSpendingChange = (field, value) => {
-                setMonthlySpending(prev => ({
-                    ...prev,
-                    [field]: value
-                }));
-            };
-
-            const results = calculateResults();
-            const analysis = calculateAnalysis();
-
-            return (
-                <div className="min-h-screen bg-gray-100 p-4">
-                    <div className="max-w-7xl mx-auto">
-                        <h1 className="text-2xl font-bold mb-6">Power Plant Economic Analysis Dashboard</h1>
-                        
-                        {/* Variable Inputs Section */}
-                        <Card className="mb-6">
-                            <CardHeader>
-                                <CardTitle>Variable Inputs</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Number of Engines</label>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            value={inputs.engineCount}
-                                            onChange={(e) => handleInputChange('engineCount', Math.max(1, parseInt(e.target.value)))}
-                                            className="w-full p-2 border rounded"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Engine Type</label>
-                                        <select
-                                            value={inputs.engineType}
-                                            onChange={(e) => handleInputChange('engineType', e.target.value)}
-                                            className="w-full p-2 border rounded"
-                                        >
-                                            <option value="wartsila">Wärtsilä W16V25SG</option>
-                                            <option value="dha">DHA</option>
-                                            <option value="jenbacher">Jenbacher 612</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Load (%)</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max="100"
-                                            value={inputs.load}
-                                            onChange={(e) => handleInputChange('load', Math.min(100, Math.max(0, parseFloat(e.target.value))))}
-                                            className="w-full p-2 border rounded"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Gas Price (per m³)</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            step="0.1"
-                                            value={inputs.gasPrice}
-                                            onChange={(e) => handleInputChange('gasPrice', parseFloat(e.target.value))}
-                                            className="w-full p-2 border rounded"
-                                        />
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Results Section */}
-                        <Card className="mb-6">
-                            <CardHeader>
-                                <CardTitle>Results</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium">Generation (kWe)</label>
-                                        <div className="text-lg">{results.generation.toFixed(2)}</div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium">Consumption (m³)</label>
-                                        <div className="text-lg">{results.consumption.toFixed(2)}</div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium">Investment+20%</label>
-                                        <div className="text-lg">{results.investment.toLocaleString()}</div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium">1 kWe Price</label>
-                                        <div className="text-lg">{results.kWePrice.toFixed(2)}</div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium">1 MWe Price</label>
-                                        <div className="text-lg">{results.mWePrice.toFixed(2)}</div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Monthly Spending Section */}
-                        <Card className="mb-6">
-                            <CardHeader>
-                                <CardTitle>Monthly Spending</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Oil</label>
-                                        <input
-                                            type="number"
-                                            value={monthlySpending.oil}
-                                            onChange={(e) => handleSpendingChange('oil', parseFloat(e.target.value))}
-                                            className="w-full p-2 border rounded"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Service and Parts</label>
-                                        <input
-                                            type="number"
-                                            value={monthlySpending.serviceParts}
-                                            onChange={(e) => handleSpendingChange('serviceParts', parseFloat(e.target.value))}
-                                            className="w-full p-2 border rounded"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Workers (3)</label>
-                                        <input
-                                            type="number"
-                                            value={monthlySpending.workers}
-                                            onChange={(e) => handleSpendingChange('workers', parseFloat(e.target.value))}
-                                            className="w-full p-2 border rounded"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Salary Taxes (22%)</label>
-                                        <input
-                                            type="number"
-                                            value={monthlySpending.salaryTaxes}
-                                            onChange={(e) => handleSpendingChange('salaryTaxes', parseFloat(e.target.value))}
-                                            className="w-full p-2 border rounded"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Other Expenses</label>
-                                        <input
-                                            type="number"
-                                            value={monthlySpending.otherExpenses}
-                                            onChange={(e) => handleSpendingChange('otherExpenses', parseFloat(e.target.value))}
-                                            className="w-full p-2 border rounded"
-                                        />
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Price Analysis Section */}
-                        <Card className="mb-6">
-                            <CardHeader>
-                                <CardTitle>Price Analysis</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Minimum Price</label>
-                                        <input
-                                            type="number"
-                                            value={inputs.minPrice}
-                                            onChange={(e) => handleInputChange('minPrice', parseFloat(e.target.value))}
-                                            className="w-full p-2 border rounded"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Hours Above Minimum Price</label>
-                                        <div className="text-lg">{analysis.hoursAboveMin}</div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">LCOE</label>
-                                        <div className="text-lg">{analysis.lcoe.toFixed(2)}</div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Total Income</label>
-                                        <div className="text-lg">{analysis.grossIncome.toLocaleString()}</div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Monthly Revenue</label>
-                                        <div className="text-lg">{analysis.monthlyRevenue.toLocaleString()}</div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">VAT (20%)</label>
-                                        <div className={`text-lg ${analysis.vat < 0 ? 'text-danger' : analysis.vat > 0 ? 'text-success' : ''}`}>
-                                            {analysis.vat.toLocaleString()}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Re-Investment</label>
-                                        <div className="text-lg">
-                                            {analysis.reInvestment > 0 ? '+' : ''}{analysis.reInvestment.toLocaleString()}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Payback Period (months)</label>
-                                        <div className="text-lg">
-                                            {analysis.paybackPeriod > 12 ? '>12' : analysis.paybackPeriod.toFixed(1)}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">ROE (Return on Equity)</label>
-                                        <div className="text-lg">{analysis.roe.toFixed(2)}%</div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">ROA (Return on Assets)</label>
-                                        <div className="text-lg">{analysis.roa.toFixed(2)}%</div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Plant Availability</label>
-                                        <div className="text-lg">{analysis.availability.toFixed(2)}%</div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                </div>
-            );
-        };
-
-        // Render the app
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<PowerPlantDashboard />);
+        // Initial load
+        loadPriceData();
+        calculateResults();
     </script>
 </body>
 </html>
