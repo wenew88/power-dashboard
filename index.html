@@ -3,926 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Power Plant Economic Analysis Dashboard</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    
+    <title>Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
 
-
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
-
-    body {
-        font-family: 'Inter', sans-serif;
-        margin: 0;
-        padding: 20px;
-        background: #f0f2f5;
-    }
-
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        background: white;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    h1, h2 {
-        color: #333;
-        text-align: center;
-        font-weight: 600;
-    }
-
-    .section {
-        background: #ffffff;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .section-title {
-        font-size: 20px;
-        font-weight: 600;
-        color: #444;
-        margin-bottom: 15px;
-    }
-
-    label {
-        font-weight: 500;
-        display: block;
-        margin-bottom: 5px;
-        color: #555;
-    }
-
-    input, select {
-        width: 100%;
-        padding: 10px;
-        font-size: 14px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        margin-bottom: 10px;
-        transition: 0.3s;
-    }
-
-    input:focus, select:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
-    }
-
-    .btn-primary {
-        background-color: #007bff;
-        color: white;
-        padding: 10px 15px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: background 0.3s ease-in-out;
-    }
-
-    .btn-primary:hover {
-        background-color: #0056b3;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-    }
-
-    th, td {
-        padding: 10px;
-        text-align: right;
-        border-bottom: 1px solid #ddd;
-    }
-
-    th {
-        background: #f8f9fa;
-        font-weight: bold;
-    }
-
-    .highlighted {
-        background: #4CAF50;
-        color: white;
-        font-weight: bold;
-    }
-
-    .results span {
-        font-size: 16px;
-        font-weight: bold;
-        color: black; /* Ensure Total Monthly Operating Costs stays black */
-    }
-
-    .positive, .table-value-positive {
-        color: #28a745 !important; /* Green for positive values */
-        font-weight: bold;
-    }
-
-    .negative, .table-value-negative {
-        color: #dc3545 !important; /* Red for negative values */
-        font-weight: bold;
-    }
-
-    .neutral {
-        color: #6c757d;
-    }
-
-</style>
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
-
-    body {
-        font-family: 'Inter', sans-serif;
-        margin: 0;
-        padding: 20px;
-        background: #f0f2f5;
-    }
-
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        background: white;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    h1, h2 {
-        color: #333;
-        text-align: center;
-        font-weight: 600;
-    }
-
-    .section {
-        background: #ffffff;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .section-title {
-        font-size: 20px;
-        font-weight: 600;
-        color: #444;
-        margin-bottom: 15px;
-    }
-
-    label {
-        font-weight: 500;
-        display: block;
-        margin-bottom: 5px;
-        color: #555;
-    }
-
-    input, select {
-        width: 100%;
-        padding: 10px;
-        font-size: 14px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        margin-bottom: 10px;
-        transition: 0.3s;
-    }
-
-    input:focus, select:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
-    }
-
-    .btn-primary {
-        background-color: #007bff;
-        color: white;
-        padding: 10px 15px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: background 0.3s ease-in-out;
-    }
-
-    .btn-primary:hover {
-        background-color: #0056b3;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-    }
-
-    th, td {
-        padding: 10px;
-        text-align: right;
-        border-bottom: 1px solid #ddd;
-    }
-
-    th {
-        background: #f8f9fa;
-        font-weight: bold;
-    }
-
-    .highlighted {
-        background: #4CAF50;
-        color: white;
-        font-weight: bold;
-    }
-
-    .results span {
-        font-size: 16px;
-        font-weight: bold;
-        color: black; /* Ensure Total Monthly Operating Costs stays black */
-    }
-
-    .positive {
-        color: #28a745; /* Green for positive values */
-    }
-
-    .negative {
-        color: #dc3545; /* Red for negative values */
-    }
-
-    .neutral {
-        color: #6c757d;
-    }
-
-    /* Apply consistent green/red color in tables */
-    .table-value-positive {
-        color: #28a745 !important; /* Green */
-    }
-
-    .table-value-negative {
-        color: #dc3545 !important; /* Red */
-    }
-
-</style>
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
-
-    body {
-        font-family: 'Inter', sans-serif;
-        margin: 0;
-        padding: 20px;
-        background: #f0f2f5;
-    }
-
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        background: white;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    h1, h2 {
-        color: #333;
-        text-align: center;
-        font-weight: 600;
-    }
-
-    .section {
-        background: #ffffff;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .section-title {
-        font-size: 20px;
-        font-weight: 600;
-        color: #444;
-        margin-bottom: 15px;
-    }
-
-    label {
-        font-weight: 500;
-        display: block;
-        margin-bottom: 5px;
-        color: #555;
-    }
-
-    input, select {
-        width: 100%;
-        padding: 10px;
-        font-size: 14px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        margin-bottom: 10px;
-        transition: 0.3s;
-    }
-
-    input:focus, select:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
-    }
-
-    .btn-primary {
-        background-color: #007bff;
-        color: white;
-        padding: 10px 15px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: background 0.3s ease-in-out;
-    }
-
-    .btn-primary:hover {
-        background-color: #0056b3;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-    }
-
-    th, td {
-        padding: 10px;
-        text-align: right;
-        border-bottom: 1px solid #ddd;
-    }
-
-    th {
-        background: #f8f9fa;
-        font-weight: bold;
-    }
-
-    .highlighted {
-        background: #4CAF50;
-        color: white;
-        font-weight: bold;
-    }
-
-    .results span {
-        font-size: 16px;
-        font-weight: bold;
-        color: #007bff;
-    }
-
-    .positive {
-        color: #28a745;
-    }
-
-    .negative {
-        color: #dc3545;
-    }
-
-    .neutral {
-        color: #6c757d;
-    }
-
-</style>
-<style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px; 
-            background: #f5f5f5; 
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1e2b37;
+            color: #ffffff;
         }
-        .container { 
-            max-width: 1400px; 
-            margin: 0 auto; 
-            background: white; 
-            padding: 20px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+
+        .container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
-        .section { 
-            margin-bottom: 30px; 
-            padding: 15px; 
-            border: 1px solid #ddd; 
-            border-radius: 4px; 
-            background: white;
+
+        .sidebar {
+            width: 300px;
+            background-color: #243447;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
         }
-        .section-title { 
-            color: #2c3e50; 
-            margin-bottom: 15px; 
-            padding-bottom: 8px;
-            font-weight: 600;
+
+        .sidebar h2 {
+            color: #ffffff;
+            font-size: 18px;
+            margin-bottom: 20px;
         }
-        label { 
-            display: inline-block; 
-            width: 200px; 
-            font-weight: bold; 
-            margin-bottom: 5px;
+
+        .sidebar label {
+            color: #b0bec5;
+            margin-bottom: 8px;
         }
-        input { 
-            padding: 8px; 
-            width: 150px; 
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+
+        .sidebar input, .sidebar select, .sidebar button {
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #2c3e50;
+            color: #ffffff;
         }
-        select { 
-            padding: 8px; 
-            width: 200px; 
-            margin-bottom: 10px; 
-            font-size: 14px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+
+        .sidebar button {
+            background-color: #3498db;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
-        table { 
-            border-collapse: collapse; 
-            width: 100%; 
-            font-size: 12px;
-            margin: 10px 0;
+
+        .sidebar button:hover {
+            background-color: #2980b9;
         }
-        th, td { 
-            border: 1px solid #ddd; 
-            padding: 8px; 
-            text-align: right; 
-        }
-        th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-        }
-        .highlighted { 
-            background-color: #90EE90; 
-        }
-        .results { 
-            font-weight: bold; 
-            margin: 15px 0;
-            line-height: 1.6;
-        }
-        .table-container { 
-            overflow-x: auto; 
-            max-height: 600px; 
+
+        .main {
+            flex-grow: 1;
+            padding: 20px;
             overflow-y: auto;
-            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
-        .monthly-summary { 
-            margin: 20px 0; 
+
+        .main h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
         }
-        .monthly-summary table { 
-            width: auto; 
-            margin: 10px 0; 
+
+        .chart, .table {
+            background-color: #2c3e50;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
-        .monthly-summary td { 
-            padding: 8px 15px; 
+
+        .chart canvas {
+            width: 100%;
+            height: 300px;
         }
-        .monthly-summary h3 { 
-            margin: 0 0 10px 0;
-            color: #2c3e50;
-        }
-        #loading { 
-            display: none; 
-            color: #666; 
-            margin: 10px 0; 
-            font-style: italic; 
-        }
-        .financial-metric { 
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 10px;
-            padding: 5px 0;
         }
-        .metric-value { 
-            font-weight: bold;
-            padding: 0 5px;
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #3a4a59;
         }
-        .info-text { 
-            font-size: 12px; 
-            color: #666; 
-            margin-top: 5px; 
+
+        th {
+            color: #b0bec5;
         }
-        .positive { color: #28a745; }
-        .negative { color: #dc3545; }
-        .neutral { color: #6c757d; }
+
+        td {
+            color: #ffffff;
+        }
+
+        .positive {
+            color: #27ae60;
+        }
+
+        .negative {
+            color: #e74c3c;
+        }
+
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="section-title">Power Plant Economic Analysis Dashboard</h1>
-        
-        <h2 class="section-title">Input Parameters</h2>
-        <div class="section">
-            <div>
-                <label>Number of Engines:</label>
-                <input type="number" id="engineCount" value="1" min="1">
-            </div>
-            <div>
-                <label>Engine type:</label>
-                <select id="engineType" onchange="updateEngineValues()">
-                    <option value="wartsila">Wärtsilä W16V25SG (3000 kWe)</option>
-                    <option value="dha" selected>DHA (315 kWe)</option>
-                    <option value="jenbacher">Jenbacher 612 (2200 kWe)</option>
-                </select>
-            </div>
-            <div>
-                <label>Gas Engine (kWe):</label>
-                <input type="number" id="gasEngine" value="315">
-            </div>
-            <div>
-                <label>Engine price:</label>
-                <input type="number" id="enginePrice" value="2000000">
-            </div>
-            <div>
-                <label>NG consumption (m³):</label>
-                <input type="number" id="ngConsumption" value="84">
-            </div>
-            <div>
-                <label>Load (%):</label>
-                <input type="number" id="loadPercentage" value="0.9" step="0.1" max="1">
-            </div>
-            <div>
-                <label>Gas price (per m³):</label>
-                <input type="number" id="gasPrice" value="16.5">
-            </div>
-        </div>
+<div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Settings</h2>
+        <label for="gas-price">Gas Price ($)</label>
+        <input type="number" id="gas-price" placeholder="Enter gas price">
 
-        <h2 class="section-title">Key Project Metrics</h2>
-        <div class="section">
-            <div>
-                <label>Generation kWe:</label>
-                <span id="kweResult">0</span>
-            </div>
-            <div>
-                <label>Consumption (m³):</label>
-                <span id="consumptionResult">0</span>
-            </div>
-            <div>
-                <label>Investment+20%:</label>
-                <span id="investmentResult">0</span>
-            </div>
-            <div>
-                <label>1 kWe price:</label>
-                <span id="kWePriceResult">0</span>
-            </div>
-            <div>
-                <label>1 MWe price:</label>
-                <span id="mWePriceResult">0</span>
-            </div>
-        </div>
+        <label for="engine-count">Number of Engines</label>
+        <input type="number" id="engine-count" placeholder="Enter engine count">
 
-        <h2 class="section-title">Monthly Operating Costs</h2>
-        <div class="section">
-            <div>
-                <label>Oil:</label>
-                <input type="number" id="oilCost" value="32800">
-            </div>
-            <div>
-                <label>Service and parts:</label>
-                <input type="number" id="serviceCost" value="41000">
-            </div>
-            <div>
-                <label>Workers (3):</label>
-                <input type="number" id="workersCost" value="49200">
-            </div>
-            <div>
-                <label>Salary taxes (22%):</label>
-                <input type="number" id="taxCost" value="10824">
-            </div>
-            <div>
-                <label>Other expenses:</label>
-                <input type="number" id="otherCost" value="61500">
-            </div>
-            <div class="results">
-                <label>Total Monthly Operating Costs:</label>
-                <span id="totalSpending">0</span>
-            </div>
-        </div>
-
-        <h2 class="section-title">Financial Performance</h2>
-        <div class="section">
-            <div>
-                <label>Minimum Price:</label>
-                <input type="number" id="minPrice" value="5000" onchange="updateAnalysis()">
-            </div>
-
-            <div class="results">
-                <div>Hours above minimum price: <span id="hourCount">0</span></div>
-                <div>LCOE: <span id="lcoe">0</span></div>
-                <div>Total Income: <span id="totalIncome">0</span></div>
-                <div>Annual Revenue (after expenses): <span id="totalRevenue" class="metric-value">0</span></div>
-                <div>Total VAT: <span id="totalVAT" class="metric-value">0</span></div>
-                <div>Free Cash Flow: <span id="freeCashFlow" class="metric-value">0</span></div>
-                <div>Payback Period: <span id="paybackPeriod">0</span> months</div>
-                <div class="financial-metric">ROE (Return on Equity): <span id="roe" class="metric-value">0</span>%</div>
-                <div class="financial-metric">ROA (Return on Assets): <span id="roa" class="metric-value">0</span>%</div>
-                <div class="financial-metric">ROI (Return on Investment): <span id="roi" class="metric-value">0</span>%</div>
-                <div class="financial-metric">IRR (Internal Rate of Return): <span id="irr" class="metric-value">0</span>%</div>
-                <div class="financial-metric">NPV (Net Present Value): <span id="npv" class="metric-value">0</span></div>
-            </div>
-
-            <div id="loading">Loading price data...</div>
-            
-            <div class="monthly-summary">
-                <!-- Monthly summary table will be inserted here -->
-            </div>
-
-            <div class="table-container">
-                <div id="priceTable">
-                    <!-- Price table will be inserted here -->
-                </div>
-            </div>
-        </div>
+        <button onclick="updateDashboard()">Update Dashboard</button>
     </div>
 
-    <script>
-        let priceData = [];
+    <!-- Main Content -->
+    <div class="main">
+        <h1>Project Dashboard</h1>
 
-        const engineSpecs = {
-            wartsila: {
-                power: 3000,
-                name: "Wärtsilä W16V25SG",
-                ngConsumption: 777,
-                price: 6000000
-            },
-            dha: {
-                power: 315,
-                name: "DHA",
-                ngConsumption: 84,
-                price: 2000000
-            },
-            jenbacher: {
-                power: 2200,
-                name: "Jenbacher 612",
-                ngConsumption: 444.30,
-                price: 5000000
-            }
-        };
+        <!-- Chart Section -->
+        <div class="chart">
+            <h2>Generation Overview</h2>
+            <canvas id="chart1"></canvas>
+        </div>
 
-        function calculateNPV(cashFlows, initialInvestment, discountRate = 0.10) {
-            let npv = -initialInvestment;
-            cashFlows.forEach((cashFlow, index) => {
-                npv += cashFlow / Math.pow(1 + discountRate, index + 1);
-            });
-            return npv;
+        <!-- Table Section -->
+        <div class="table">
+            <h2>Financial Summary</h2>
+            <table>
+                <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Total Revenue</td>
+                    <td class="positive">$1,000,000</td>
+                </tr>
+                <tr>
+                    <td>Total Costs</td>
+                    <td class="negative">$500,000</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    function updateDashboard() {
+        alert("Dashboard updated!");
+    }
+
+    // Example chart
+    const ctx = document.getElementById('chart1').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['January', 'February', 'March'],
+            datasets: [{
+                label: 'Energy Generation (kWh)',
+                data: [5000, 10000, 15000],
+                backgroundColor: '#3498db'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
         }
-
-        function calculateIRR(cashFlows, initialInvestment, precision = 0.01) {
-            let low = -1;
-            let high = 1;
-            let guess = (low + high) / 2;
-            let npv = 0;
-            let maxIterations = 100;
-            
-            while (maxIterations > 0) {
-                npv = -initialInvestment;
-                for (let i = 0; i < cashFlows.length; i++) {
-                    npv += cashFlows[i] / Math.pow(1 + guess, i + 1);
-                }
-                
-                if (Math.abs(npv) < precision) {
-                    return guess * 100;
-                }
-                
-                if (npv > 0) {
-                    low = guess;
-                } else {
-                    high = guess;
-                }
-                
-                guess = (low + high) / 2;
-                maxIterations--;
-            }
-            
-            return guess * 100;
-        }
-
-        function calculateROI(totalReturn, initialInvestment) {
-            return ((totalReturn - initialInvestment) / initialInvestment) * 100;
-        }
-
-        function updateEngineValues() {
-            const selectedEngine = document.getElementById('engineType').value;
-            document.getElementById('gasEngine').value = engineSpecs[selectedEngine].power;
-            document.getElementById('ngConsumption').value = engineSpecs[selectedEngine].ngConsumption;
-            document.getElementById('enginePrice').value = engineSpecs[selectedEngine].price;
-            calculateResults();
-        }
-
-        async function loadPriceData() {
-            document.getElementById('loading').style.display = 'block';
-            try {
-                const response = await fetch('d24.csv');
-                const text = await response.text();
-                priceData = Papa.parse(text, {
-                    header: false,
-                    dynamicTyping: true,
-                    skipEmptyLines: true
-                }).data;
-                updateAnalysis();
-                document.getElementById('loading').style.display = 'none';
-            } catch (error) {
-                console.error('Error loading CSV:', error);
-                document.getElementById('loading').textContent = 'Error loading price data';
-            }
-        }
-
-        function calculateResults() {
-            const engineCount = parseFloat(document.getElementById('engineCount').value);
-            const gasEngine = parseFloat(document.getElementById('gasEngine').value);
-            const ngConsumption = parseFloat(document.getElementById('ngConsumption').value);
-            const enginePrice = parseFloat(document.getElementById('enginePrice').value);
-            const loadPercentage = parseFloat(document.getElementById('loadPercentage').value);
-            const gasPrice = parseFloat(document.getElementById('gasPrice').value);
-
-            const kwe = gasEngine * loadPercentage * engineCount;
-            const consumption = ngConsumption * loadPercentage * engineCount;
-            const investment = enginePrice * engineCount * 1.2;
-            const kwePrice = (ngConsumption * gasPrice) / gasEngine;
-            const mwePrice = kwePrice * 1000;
-
-            document.getElementById('kweResult').textContent = kwe.toFixed(2);
-            document.getElementById('consumptionResult').textContent = consumption.toFixed(2);
-            document.getElementById('investmentResult').textContent = investment.toFixed(2);
-            document.getElementById('kWePriceResult').textContent = kwePrice.toFixed(2);
-            document.getElementById('mWePriceResult').textContent = mwePrice.toFixed(2);
-
-            calculateSpending();
-            updateAnalysis();
-        }
-
-        function calculateSpending() {
-            const engineCount = parseFloat(document.getElementById('engineCount').value);
-            const costs = [
-                'oilCost', 'serviceCost', 'workersCost', 
-                'taxCost', 'otherCost'
-            ].map(id => (parseFloat(document.getElementById(id).value) || 0) * engineCount);
-
-            const total = costs.reduce((sum, cost) => sum + cost, 0);
-            document.getElementById('totalSpending').textContent = total.toFixed(2);
-            updateAnalysis();
-        }
-
-        function updateAnalysis() {
-            if (!priceData.length) return;
-
-            const minPrice = parseFloat(document.getElementById('minPrice').value);
-            const mwePrice = parseFloat(document.getElementById('mWePriceResult').textContent);
-            const kweValue = parseFloat(document.getElementById('kweResult').textContent);
-            const monthlySpending = parseFloat(document.getElementById('totalSpending').textContent);
-            const totalInvestment = parseFloat(document.getElementById('investmentResult').textContent);
-            
-            let hoursCount = 0;
-            let totalIncome = 0;
-            let cumulativeRevenue = 0;
-
-            const monthlyTable = document.createElement('table');
-            monthlyTable.innerHTML = '<tr><th>Month</th><th>kWe sold</th><th>Gas cost</th><th>Gas VAT</th><th>Electricity VAT</th><th>Net VAT</th><th>Income</th><th>Revenue</th><th>Break-even</th></tr>';
-            
-            const monthlyIncome = Array(12).fill(0);
-            const monthlyRevenue = Array(12).fill(0);
-            const monthlyBreakeven = Array(12).fill(0);
-            const hoursAboveMinPricePerMonth = Array(12).fill(0);
-            const monthlyGasCost = Array(12).fill(0);
-            const monthlyGasVAT = Array(12).fill(0);
-            const monthlyElectricityVAT = Array(12).fill(0);
-            const monthlyNetVAT = Array(12).fill(0);
-            
-            const gasPrice = parseFloat(document.getElementById('gasPrice').value);
-            const consumption = parseFloat(document.getElementById('consumptionResult').textContent);
-            const daysPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-            let dayCounter = 0;
-
-            const priceTable = document.createElement('table');
-            const headerRow = document.createElement('tr');
-            headerRow.innerHTML = '<th>Day</th>' + Array.from({length: 24}, (_, i) => `<th>${i+1}</th>`).join('');
-            priceTable.appendChild(headerRow);
-
-            daysPerMonth.forEach((days, monthIndex) => {
-                for(let day = 0; day < days; day++) {
-                    if (dayCounter >= priceData.length) break;
-                    
-                    const dayPrices = priceData[dayCounter];
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td>${dayCounter + 1}</td>`;
-                    
-                    dayPrices.forEach((price, hour) => {
-                        const isHighlighted = price > minPrice;
-                        row.innerHTML += `<td class="${isHighlighted ? 'highlighted' : ''}">${price}</td>`;
-                        
-                        if (isHighlighted) {
-                            hoursCount++;
-                            hoursAboveMinPricePerMonth[monthIndex]++;
-                            const hourIncome = ((price - mwePrice)/1000) * kweValue;
-                            const hourGasCost = consumption * gasPrice;
-                            const hourGasVAT = hourGasCost * 0.2;
-                            const hourElectricityVAT = hourIncome * 0.2;
-                            const hourNetVAT = hourGasVAT - hourElectricityVAT;
-                            
-                            totalIncome += hourIncome;
-                            monthlyIncome[monthIndex] += hourIncome;
-                            monthlyGasCost[monthIndex] += hourGasCost;
-                            monthlyGasVAT[monthIndex] += hourGasVAT;
-                            monthlyElectricityVAT[monthIndex] += hourElectricityVAT;
-                            monthlyNetVAT[monthIndex] += hourNetVAT;
-                        }
-                    });
-                    
-                    priceTable.appendChild(row);
-                    dayCounter++;
-                }
-                monthlyRevenue[monthIndex] = monthlyIncome[monthIndex] - monthlySpending;
-                cumulativeRevenue += monthlyRevenue[monthIndex];
-                monthlyBreakeven[monthIndex] = totalInvestment - cumulativeRevenue;
-            });
-
-            monthlyIncome.forEach((income, index) => {
-                const monthName = new Date(2024, index).toLocaleString('default', { month: 'long' });
-                const revenue = monthlyRevenue[index];
-                const breakeven = monthlyBreakeven[index];
-                const monthWorkingHours = hoursAboveMinPricePerMonth[index] || 0;
-                const kWeSold = kweValue * monthWorkingHours;
-                const gasCost = monthlyGasCost[index];
-                const gasVAT = monthlyGasVAT[index];
-                const electricityVAT = monthlyElectricityVAT[index];
-                const netVAT = monthlyNetVAT[index];
-                monthlyTable.innerHTML += `
-                    <tr>
-                        <td>${monthName}</td>
-                        <td>${kWeSold.toFixed(2)}</td>
-                        <td>${gasCost.toFixed(2)}</td>
-                        <td style="color: green">+${gasVAT.toFixed(2)}</td>
-                        <td style="color: red">-${electricityVAT.toFixed(2)}</td>
-                        <td style="color: ${netVAT >= 0 ? 'green' : 'red'}">${netVAT >= 0 ? '+' : '-'}${Math.abs(netVAT).toFixed(2)}</td>
-                        <td>${income.toFixed(2)}</td>
-                        <td style="color: ${revenue >= 0 ? 'green' : 'red'}">${revenue.toFixed(2)}</td>
-                        <td style="color: ${breakeven <= 0 ? 'green' : 'red'}">${breakeven <= 0 ? '+' : '-'}${Math.abs(breakeven).toFixed(2)}</td>
-                    </tr>`;
-            });
-
-            const annualRevenue = monthlyRevenue.reduce((sum, revenue) => sum + revenue, 0);
-            const totalVAT = monthlyNetVAT.reduce((sum, vat) => sum + vat, 0);
-            const freeCashFlow = monthlyBreakeven[11];
-
-            let pricesAboveMin = [];
-            priceData.forEach(dayPrices => {
-                dayPrices.forEach(price => {
-                    if (price > minPrice) {
-                        pricesAboveMin.push(price);
-                    }
-                });
-            });
-            const lcoe = pricesAboveMin.length > 0 ? 
-                (pricesAboveMin.reduce((sum, price) => sum + price, 0) / pricesAboveMin.length).toFixed(2) : 
-                "0.00";
-
-            let paybackPeriod = 0;
-            let cumulativeCashFlow = -totalInvestment;
-            
-            for (let i = 0; i < monthlyRevenue.length; i++) {
-                cumulativeCashFlow += monthlyRevenue[i];
-                if (cumulativeCashFlow >= 0) {
-                    paybackPeriod = i + 1;
-                    break;
-                }
-            }
-            
-            if (cumulativeCashFlow < 0) {
-                paybackPeriod = ">12";
-            }
-
-            // Calculate ROE, ROA, ROI, IRR, and NPV
-            const totalEquity = totalInvestment;
-            const totalAssets = totalInvestment * 1.2;
-            const roe = annualRevenue > 0 ? (annualRevenue / totalEquity) * 100 : 0;
-            const roa = annualRevenue > 0 ? (annualRevenue / totalAssets) * 100 : 0;
-            const roi = calculateROI(annualRevenue, totalInvestment);
-            const irr = calculateIRR(monthlyRevenue, totalInvestment);
-            const npv = calculateNPV(monthlyRevenue, totalInvestment);
-
-            // Update display
-            document.querySelector('.monthly-summary').innerHTML = '<h3>Monthly Income Summary</h3>';
-            document.querySelector('.monthly-summary').appendChild(monthlyTable);
-            
-            document.getElementById('priceTable').innerHTML = '';
-            document.getElementById('priceTable').appendChild(priceTable);
-            
-            document.getElementById('hourCount').textContent = hoursCount;
-            document.getElementById('lcoe').textContent = lcoe;
-            document.getElementById('totalIncome').textContent = totalIncome.toFixed(2);
-            
-            // Annual Revenue styling
-            const totalRevenueElement = document.getElementById('totalRevenue');
-            totalRevenueElement.style.color = annualRevenue > 0 ? 'green' : annualRevenue < 0 ? 'red' : 'black';
-            totalRevenueElement.textContent = annualRevenue.toFixed(2);
-            
-            // Total VAT styling
-            const totalVATElement = document.getElementById('totalVAT');
-            totalVATElement.style.color = totalVAT > 0 ? 'green' : totalVAT < 0 ? 'red' : 'black';
-            totalVATElement.textContent = `${totalVAT >= 0 ? '+' : '-'}${Math.abs(totalVAT).toFixed(2)}`;
-            
-            // Free Cash Flow styling
-            const freeCashFlowElement = document.getElementById('freeCashFlow');
-            freeCashFlowElement.style.color = freeCashFlow < 0 ? 'red' : 'green';
-            freeCashFlowElement.textContent = freeCashFlow <= 0 ? `+${Math.abs(freeCashFlow).toFixed(2)}` : '0.00';
-            
-            document.getElementById('paybackPeriod').textContent = paybackPeriod;
-            document.getElementById('roe').textContent = roe.toFixed(2);
-            document.getElementById('roa').textContent = roa.toFixed(2);
-            document.getElementById('roi').textContent = roi.toFixed(2);
-            document.getElementById('irr').textContent = irr.toFixed(2);
-            document.getElementById('npv').textContent = npv.toFixed(2);
-        }
-
-        // Add event listeners
-        document.querySelectorAll('input[type="number"]').forEach(input => {
-            input.addEventListener('change', calculateResults);
-        });
-
-        // Initial load
-        loadPriceData();
-        calculateResults();
-    </script>
+    });
+</script>
 </body>
 </html>
